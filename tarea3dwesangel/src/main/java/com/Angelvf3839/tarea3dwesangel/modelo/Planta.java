@@ -1,9 +1,13 @@
 package com.Angelvf3839.tarea3dwesangel.modelo;
 
+
+import java.io.Serializable;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Objects;
 
 import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -13,51 +17,71 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 
 @Entity
-@Table(name="plantas")
-public class Planta {
-	
+@Table(name = "plantas")
+public class Planta implements Serializable{
+
+	private static final long serialVersionUID = 1L;
+
 	@Id
-	@GeneratedValue(strategy=GenerationType.IDENTITY)
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
-	private String nombrecomun;
-	private String nombrecientifico;
+	
+	@Column(unique=true)
+	private String codigo;
+
+	@Column												
+	private String nombreComun;
+
+	@Column												
+	private String nombreCientifico;
 	
 	@OneToMany(cascade= CascadeType.ALL)
 	@JoinColumn(name="idplanta")
 	private List<Ejemplar> ejemplares = new LinkedList<Ejemplar>();
-	
-	public Planta() {}
-	
-	public Planta(Long id, String nombrecomun, String nombrecientifico) {
-		super();
-		this.id = id;
-		this.nombrecomun = nombrecomun;
-		this.nombrecientifico = nombrecientifico;
-	}
 
+	
+	public Planta() {
+		
+	}
+	
+	public Planta(String codigo, String nombreComun, String nombreCientifico) {
+		this.codigo = codigo;
+		this.nombreComun = nombreComun;
+		this.nombreCientifico = nombreCientifico;
+	}
+	
 	public Long getId() {
 		return id;
 	}
 
-	public void setId(Long Id) {
-		this.id = Id;
+	public void setId(Long id) {
+		this.id = id;
+	}
+	
+	public String getCodigo() {
+		return codigo;
 	}
 
-	public String getNombrecomun() {
-		return nombrecomun;
+	public void setCodigo(String codigo) {
+		this.codigo = codigo;
 	}
 
-	public void setNombrecomun(String nombrecomun) {
-		this.nombrecomun = nombrecomun;
+	public String getNombreComun() {
+		return nombreComun;
 	}
 
-	public String getNombrecientifico() {
-		return nombrecientifico;
+	public void setNombreComun(String nombreComun) {
+		this.nombreComun = nombreComun;
 	}
 
-	public void setNombrecientifico(String nombrecientifico) {
-		this.nombrecientifico = nombrecientifico;
+	public String getNombreCientifico() {
+		return nombreCientifico;
 	}
+
+	public void setNombreCientifico(String nombreCientifico) {
+		this.nombreCientifico = nombreCientifico;
+	}
+	
 
 	public List<Ejemplar> getEjemplares() {
 		return ejemplares;
@@ -68,8 +92,29 @@ public class Planta {
 	}
 
 	@Override
-	public String toString() {
-		return this.nombrecomun;
+	public int hashCode() {
+		return Objects.hash(id, nombreComun, nombreCientifico);
 	}
 
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		Planta other = (Planta) obj;
+		return Objects.equals(id, other.id) && Objects.equals(nombreComun, other.nombreComun)
+				&& Objects.equals(nombreCientifico, other.nombreCientifico);
+	}
+
+	@Override
+	public String toString() {
+		String ret = "";
+		ret += "Codigo de planta: " + this.id;
+		ret += "\nNombre científico: " + this.nombreCientifico;
+		ret += "\nNombre común: " + this.nombreComun;
+		return ret;
+	}
 }
