@@ -1,22 +1,62 @@
 package com.Angelvf3839.tarea3dwesangel.servicios;
 
+import java.util.List;
+import java.util.Optional;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.Angelvf3839.tarea3dwesangel.modelo.Planta;
-import com.Angelvf3839.tarea3dwesangel.repositorios.EjemplarRepository;
 import com.Angelvf3839.tarea3dwesangel.repositorios.PlantaRepository;
+
+import jakarta.transaction.Transactional;
 
 @Service
 public class ServiciosPlanta {
-	@Autowired
-	PlantaRepository plantaRepo;
-	@Autowired
-	EjemplarRepository ejemplarRepo;
+
+    @Autowired
+    private PlantaRepository plantaRepo;
 	
-	public void insertarPlanta(Planta p) {
-		plantaRepo.save(p);
-	}
+	public void insertar(Planta p) {
+    	plantaRepo.saveAndFlush(p);
+    }
+	
+	public List<Planta> verTodas() {
+    	return plantaRepo.findAllByOrderByNombreComunAsc();
+    }
+	
+	public Planta buscarPorID(long id) {
+        Optional<Planta> plantas = plantaRepo.findById(id);
+        return plantas.orElse(null);
+    }
+	
+	@Transactional
+    public boolean actualizarNombreComun(String codigo, String nombreComun) { 
+        Optional<Planta> plantas = plantaRepo.findByCodigo(codigo);
+        if (plantas.isPresent()) {
+            Planta planta = plantas.get();
+            planta.setNombreComun(nombreComun);
+            plantaRepo.saveAndFlush(planta);
+            return true;
+        }
+        return false;
+    }
+	
+	@Transactional
+    public boolean actualizarNombreCientifico(String codigo, String nombreCientifico) {
+        Optional<Planta> plantas = plantaRepo.findByCodigo(codigo);
+        if (plantas.isPresent()) {
+            Planta p = plantas.get();
+            p.setNombreCientifico(nombreCientifico);
+            plantaRepo.saveAndFlush(p);
+            return true;
+        }
+        return false;
+    }
+	
+	public boolean codigoExistente(String codigo) {
+        return plantaRepo.existsByCodigo(codigo);
+    }
 	
 	/* Método para ver validar una planta */
 	
