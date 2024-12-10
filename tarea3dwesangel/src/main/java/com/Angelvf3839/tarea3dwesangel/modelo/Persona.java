@@ -31,7 +31,7 @@ public class Persona implements Serializable{
 	@Column(unique=true, nullable = false)
 	private String email;
 	
-	@OneToOne(mappedBy= "persona", cascade= CascadeType.ALL)
+	@OneToOne(mappedBy= "persona", cascade = CascadeType.ALL, orphanRemoval = true)
 	private Credenciales credenciales;
 	
 	@OneToMany(mappedBy = "persona")
