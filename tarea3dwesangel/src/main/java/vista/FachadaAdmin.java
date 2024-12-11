@@ -445,8 +445,6 @@ public class FachadaAdmin {
 			do {
 				System.out.print("Contraseña: ");
 				contraseña = in.nextLine().trim();
-				// Una pequeña medida de seguridad para las credenciales que he decidido
-				// introducir
 				if (servCredenciales.validarContraseña(contraseña) == false) {
 					System.out.println(
 							"La contraseña debe tener al menos 8 caracteres e incluir al menos un carácter especial como un punto o una coma.");
@@ -462,11 +460,9 @@ public class FachadaAdmin {
 		} while (!correcto);
 		try {
 			long idPersona = servPersona.insertar(pers);
-			if (idPersona > 0) {
-				c.setIdPersona(idPersona);
-				// Cuando se inserta una persona, se generan sus credenciales asociadas
-				int insertarCredenciales = servCredenciales.insertar(usuario, contraseña,
-						idPersona);
+			if (idPersona > 0) { 
+				c.setId(idPersona);
+				int insertarCredenciales = servCredenciales.insertar(usuario, contraseña, idPersona);
 				if (insertarCredenciales > 0) {
 					System.out.println("Persona y sus credenciales insertadas correctamente.");
 				} else {
