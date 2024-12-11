@@ -1,6 +1,7 @@
 package vista;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -22,12 +23,15 @@ public class FachadaInvitado {
     private ServiciosPlanta servPlanta;
 
     @Autowired
+    @Lazy
     private FachadaAdmin fachadaAdmin;
 
     @Autowired
+    @Lazy
     private FachadaPersonal fachadaPersonal;
 
     @Autowired
+    @Lazy
     private Controlador controlador; 
 
     private Scanner in = new Scanner(System.in);
@@ -36,8 +40,8 @@ public class FachadaInvitado {
         int opcion = 0;
         do {
             System.out.println("------GESTIÓN DEL VIVERO------");
-            System.out.println(" ");
-            System.out.println("Selecciona una opción: ");
+            System.out.println();
+            System.out.println("Seleccione una opción: ");
             System.out.println(" ");
             System.out.println("1. VER TODAS LAS PLANTAS");
             System.out.println("2. LOGUEARSE");
@@ -55,7 +59,7 @@ public class FachadaInvitado {
                     System.out.println("Saliendo del programa");
                     break;
                 default:
-                    System.out.println("Opción incorrecta.");
+                    System.out.println("Opción incorrecta");
                 }
             } catch (InputMismatchException e) {
                 System.out.println("Debes ingresar un número válido.");
@@ -71,17 +75,19 @@ public class FachadaInvitado {
         String usuario = in.nextLine();
         System.out.print("Introduce contraseña: ");
         String contraseña = in.nextLine();
+
         try {
-            boolean autenticar = servCred.autenticar(usuario, contraseña);  
+            boolean autenticar = servCred.autenticar(usuario, contraseña);
             if (autenticar) {
                 System.out.println("Has iniciado sesión como " + usuario);
-                controlador.setUsuarioAutenticado(usuario);  
+                controlador.setUsuarioAutenticado(usuario);
+
                 if ("admin".equals(usuario) && "admin".equals(contraseña)) {
                     System.out.println("Eres el usuario administrador");
-                    fachadaAdmin.menuAdmin(); 
+                    fachadaAdmin.menuAdmin();
                 } else {
                     System.out.println("Eres un usuario del personal del vivero");
-                    fachadaPersonal.menuPersonal(); 
+                    fachadaPersonal.menuPersonal();
                 }
             } else {
                 System.out.println("Usuario o contraseña incorrectos.");
@@ -92,16 +98,16 @@ public class FachadaInvitado {
     }
 
     public void verTodasPlantas() {
-        ArrayList<Planta> plantas = (ArrayList<Planta>) servPlanta.verTodos(); 
+        ArrayList<Planta> plantas = (ArrayList<Planta>) servPlanta.verTodas();
         if (plantas == null || plantas.isEmpty()) {
-            System.out.println("Lo siento, no hay plantas para mostrar en la base de datos.");
+            System.out.println("Lo siento, no hay plantas para mostrar en la base de datos");
             return;
         }
-        System.out.println("Todas las plantas: ");
-        System.out.println();
-        for (Planta p : plantas) {
-            System.out.println(p);
-            System.out.println();
+
+        System.out.println("Todas las plantas:");
+        for (Planta planta : plantas) {
+            System.out.println(planta);
         }
     }
+
 }
