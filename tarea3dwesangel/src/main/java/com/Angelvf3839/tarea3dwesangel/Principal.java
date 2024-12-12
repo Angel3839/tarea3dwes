@@ -7,6 +7,9 @@ import vista.FachadaInvitado;
 
 public class Principal implements CommandLineRunner {
 	
+	
+	
+	
 	 @Autowired
 	 private FachadaInvitado fachadaInvitado;
 

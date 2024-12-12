@@ -105,6 +105,7 @@ public class FachadaAdmin {
             System.out.println("2. Crear nueva planta");
             System.out.println("3. Modificar datos de una planta");
             System.out.println("4. Volver al menú principal");
+            System.out.println(" ");
             try {
                 opcion = in.nextInt();
                 if (opcion < 1 || opcion > 4) {
@@ -138,6 +139,7 @@ public class FachadaAdmin {
             System.out.println("1. Modificar nombre común");
             System.out.println("2. Modificar nombre científico");
             System.out.println("3. Volver al menú de plantas");
+            System.out.println(" ");
             try {
                 opcion = in.nextInt();
                 if (opcion < 1 || opcion > 3) {
@@ -170,6 +172,7 @@ public class FachadaAdmin {
             System.out.println("3. Ver mensajes de un ejemplar");
             System.out.println("4. Borrar un ejemplar");
             System.out.println("5. Volver al menú principal");
+            System.out.println(" ");
             try {
                 opcion = in.nextInt();
                 if (opcion < 1 || opcion > 5) {
@@ -206,6 +209,7 @@ public class FachadaAdmin {
 			System.out.println("2. Ver todas las personas");
 			System.out.println("3. Borrar una persona");
 			System.out.println("4. Volver al menú principal");
+			System.out.println(" ");
 			try {
 				opcion = in.nextInt();
 				if (opcion < 1 || opcion > 4) {
@@ -238,6 +242,7 @@ public class FachadaAdmin {
             System.out.println("1. Nuevo mensaje");
             System.out.println("2. Ver mensajes");
             System.out.println("3. Volver al menú principal");
+            System.out.println(" ");
             try {
                 opcion = in.nextInt();
                 if (opcion < 1 || opcion > 3) {
@@ -270,6 +275,7 @@ public class FachadaAdmin {
             System.out.println("3. Ver mensajes por rango de fechas");
             System.out.println("4. Ver mensajes por tipo de planta");
             System.out.println("5. Volver al menú de mensajes");
+            System.out.println(" ");
             try {
                 opcion = in.nextInt();
                 if (opcion < 1 || opcion > 5) {
@@ -297,20 +303,23 @@ public class FachadaAdmin {
             }
         } while (opcion != 5);
     }
-
+    
     public void nuevaPlanta() {
         try {
-            System.out.print("Introduce el código de la planta: ");
-            String codigo = in.nextLine().trim().toUpperCase();
+            boolean inputValido = false;
+            String codigo = "";
 
-            if (!servPlanta.validarCodigo(codigo)) {
-                System.out.println("El código no es válido.");
-                return;
-            }
+            while (!inputValido) {
+                System.out.print("Introduce el código de la planta: ");
+                codigo = in.nextLine().trim().toUpperCase();
 
-            if (servPlanta.codigoExistente(codigo)) {
-                System.out.println("El código ya está registrado para otra planta.");
-                return;
+                if (!servPlanta.validarCodigo(codigo)) {
+                    System.out.println("El código no es válido. Por favor, intenta nuevamente.");
+                } else if (servPlanta.codigoExistente(codigo)) {
+                    System.out.println("El código ya está registrado para otra planta. Por favor, intenta con un código diferente.");
+                } else {
+                    inputValido = true;
+                }
             }
 
             System.out.print("Introduce el nombre común: ");
@@ -357,16 +366,15 @@ public class FachadaAdmin {
         }
     }
 
-
     public void nuevaPersona() {
     	try {
-            in.nextLine(); // Consumir el salto de línea residual del buffer
+            in.nextLine();
 
-            // Solicitar y leer el nombre
+            
             System.out.print("Introduce el nombre: ");
             String nombre = in.nextLine().trim();
 
-            // Solicitar y leer el email
+           
             System.out.print("Introduce el email: ");
             String email = in.nextLine().trim();
             if (servPersona.emailExistente(email)) {
@@ -374,7 +382,7 @@ public class FachadaAdmin {
                 return;
             }
 
-            // Solicitar y leer el nombre de usuario
+          
             System.out.print("Introduce el nombre de usuario: ");
             String usuario = in.nextLine().trim();
             if (servCredenciales.usuarioExistente(usuario)) {
@@ -382,7 +390,7 @@ public class FachadaAdmin {
                 return;
             }
 
-            // Solicitar y leer la contraseña
+            
             System.out.print("Introduce la contraseña: ");
             String password = in.nextLine().trim();
             if (!servCredenciales.validarContraseña(password)) {
@@ -390,12 +398,12 @@ public class FachadaAdmin {
                 return;
             }
 
-            // Crear la nueva persona y credenciales
+           
             Persona nuevaPersona = new Persona(nombre, email);
             Credenciales credenciales = new Credenciales(usuario, password, nuevaPersona);
             nuevaPersona.setCredenciales(credenciales);
 
-            // Validar y guardar la persona
+            
             if (!servPersona.validarPersona(nuevaPersona)) {
                 System.out.println("Los datos de la persona no son válidos.");
                 return;

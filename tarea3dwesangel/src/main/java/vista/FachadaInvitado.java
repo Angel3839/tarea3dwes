@@ -39,12 +39,12 @@ public class FachadaInvitado {
     public void menuInvitado() {
         int opcion = 0;
         do {
-            System.out.println("------GESTIÓN DEL VIVERO------");
+            System.out.println("------GESTIÓN DE LA FACHADA------");
             System.out.println();
             System.out.println("Seleccione una opción: ");
             System.out.println(" ");
             System.out.println("1. VER TODAS LAS PLANTAS");
-            System.out.println("2. LOGUEARSE");
+            System.out.println("2. LOGIN");
             System.out.println("3. SALIR DEL PROGRAMA");
             try {
                 opcion = in.nextInt();
@@ -71,15 +71,20 @@ public class FachadaInvitado {
 
     public void login() {
         in.nextLine();  
-        System.out.print("Introduce usuario: ");
+        System.out.print("Introducir nombre de usuario: ");
         String usuario = in.nextLine();
-        System.out.print("Introduce contraseña: ");
+        System.out.print("Introducir contraseña: ");
         String contraseña = in.nextLine();
 
         try {
             boolean autenticar = servCred.autenticar(usuario, contraseña);
             if (autenticar) {
                 System.out.println("Has iniciado sesión como " + usuario);
+                
+                
+                
+                
+                
                 controlador.setUsuarioAutenticado(usuario);
 
                 if ("admin".equals(usuario) && "admin".equals(contraseña)) {
