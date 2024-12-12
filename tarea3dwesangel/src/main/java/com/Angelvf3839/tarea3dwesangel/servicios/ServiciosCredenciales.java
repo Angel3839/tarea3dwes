@@ -18,7 +18,7 @@ import com.Angelvf3839.tarea3dwesangel.repositorios.PersonaRepository;
 		PersonaRepository personaRepo;
 	
 	public boolean autenticar(String usuario, String password) {
-	    return credencialesRepo.existsByUsuarioAndPassword(usuario, password);
+	    return credencialesRepo.verificarCredenciales(usuario, password);
 	    }
 	
 	public boolean usuarioExistente(String usuario) {

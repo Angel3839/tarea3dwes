@@ -3,10 +3,13 @@ package com.Angelvf3839.tarea3dwesangel.servicios;
 import java.util.Collection;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.stereotype.Service;
 
 import com.Angelvf3839.tarea3dwesangel.modelo.Persona;
 import com.Angelvf3839.tarea3dwesangel.repositorios.PersonaRepository;
+
+import jakarta.transaction.Transactional;
 
 @Service
 public class ServiciosPersona {
@@ -27,7 +30,7 @@ public class ServiciosPersona {
     }
 
     public long idUsuarioAutenticado(String usuario) {
-        Long idPersona = personaRepo.idUsuarioAutenticado(usuario);
+        Long idPersona = personaRepo.obtenerIdDeUsuario(usuario);
         return (idPersona != null) ? idPersona : -1;
     }
     public boolean validarPersona(Persona pers) {
@@ -53,6 +56,8 @@ public class ServiciosPersona {
     	return personaRepo.findByNombreContainingIgnoreCase(nombre);
     }
     
+    @Transactional
+    @Modifying
     public boolean eliminarPersona(Long id) {
         try {
             if (personaRepo.existsById(id)) {

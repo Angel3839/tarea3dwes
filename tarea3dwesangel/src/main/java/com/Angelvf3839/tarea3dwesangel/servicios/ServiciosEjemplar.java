@@ -33,16 +33,16 @@ public class ServiciosEjemplar {
     
     @Transactional
     public boolean cambiarNombre(long idEjemplar, String nuevoNombre) {
-        int filas = ejemplarRepo.cambiarNombre(idEjemplar, nuevoNombre);
+        int filas = ejemplarRepo.actualizarNombre(idEjemplar, nuevoNombre);
         return filas > 0;
     }
 
-    public int contarEjemplares() {
-        return ejemplarRepo.contarEjemplares();
+    public long contarEjemplares() {
+        return ejemplarRepo.obtenerTotalEjemplares();
     }
 
     public ArrayList<Ejemplar> ejemplaresPorTipoPlanta(String codigo) {
-        List<Ejemplar> ejemplares = ejemplarRepo.ejemplaresPorTipoPlanta(codigo);
+        List<Ejemplar> ejemplares = ejemplarRepo.listarEjemplaresPorPlanta(codigo);
         return new ArrayList<>(ejemplares);
     }
 

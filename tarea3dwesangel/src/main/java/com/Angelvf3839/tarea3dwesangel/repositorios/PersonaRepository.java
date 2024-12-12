@@ -8,13 +8,12 @@ import org.springframework.stereotype.Repository;
 import com.Angelvf3839.tarea3dwesangel.modelo.Persona;
 
 @Repository
-public interface PersonaRepository extends JpaRepository <Persona, Long>{
+public interface PersonaRepository extends JpaRepository<Persona, Long> {
 
-	boolean existsByEmail(String email);
+    boolean existsByEmail(String email);
 
-	 @Query("SELECT c.persona.id FROM Credenciales c WHERE c.usuario = :usuario")
-	 Long idUsuarioAutenticado(@Param("usuario") String usuario);
-	 
-	 Persona findByNombreContainingIgnoreCase(String nombre);
+    @Query("SELECT p.id FROM Credenciales c JOIN c.persona p WHERE c.usuario = :username")
+    Long obtenerIdDeUsuario(@Param("username") String username);
 
+    Persona findByNombreContainingIgnoreCase(String nombre);
 }

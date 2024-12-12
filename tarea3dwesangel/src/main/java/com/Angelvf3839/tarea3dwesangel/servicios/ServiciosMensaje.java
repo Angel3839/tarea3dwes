@@ -31,17 +31,17 @@ public class ServiciosMensaje {
     }
     
     public ArrayList<Mensaje> verMensajesPorPersona(long idPersona) {
-        List<Mensaje> mensajes = mensajeRepo.findMensajesByPersonaId(idPersona);
+        List<Mensaje> mensajes = mensajeRepo.buscarPorPersona(idPersona);
         return new ArrayList<>(mensajes);
     }
 
     public ArrayList<Mensaje> verMensajesPorCodigoPlanta(String codigoPlanta) {
-        List<Mensaje> mensajes = mensajeRepo.findMensajesByCodigoPlanta(codigoPlanta);
+        List<Mensaje> mensajes = mensajeRepo.buscarMensajesPorCodigoPlanta(codigoPlanta);
         return new ArrayList<>(mensajes);
     }
 
     public ArrayList<Mensaje> verMensajesPorEjemplar(long idEjemplar) {
-        List<Mensaje> mensajes = mensajeRepo.findMensajesByEjemplarId(idEjemplar);
+        List<Mensaje> mensajes = mensajeRepo.mensajesPorEjemplar(idEjemplar);
         return new ArrayList<>(mensajes);
     }
 

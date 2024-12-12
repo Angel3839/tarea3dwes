@@ -359,10 +359,14 @@ public class FachadaAdmin {
 
 
     public void nuevaPersona() {
-        try {
+    	try {
+            in.nextLine(); // Consumir el salto de línea residual del buffer
+
+            // Solicitar y leer el nombre
             System.out.print("Introduce el nombre: ");
             String nombre = in.nextLine().trim();
 
+            // Solicitar y leer el email
             System.out.print("Introduce el email: ");
             String email = in.nextLine().trim();
             if (servPersona.emailExistente(email)) {
@@ -370,6 +374,7 @@ public class FachadaAdmin {
                 return;
             }
 
+            // Solicitar y leer el nombre de usuario
             System.out.print("Introduce el nombre de usuario: ");
             String usuario = in.nextLine().trim();
             if (servCredenciales.usuarioExistente(usuario)) {
@@ -377,6 +382,7 @@ public class FachadaAdmin {
                 return;
             }
 
+            // Solicitar y leer la contraseña
             System.out.print("Introduce la contraseña: ");
             String password = in.nextLine().trim();
             if (!servCredenciales.validarContraseña(password)) {
@@ -384,10 +390,12 @@ public class FachadaAdmin {
                 return;
             }
 
+            // Crear la nueva persona y credenciales
             Persona nuevaPersona = new Persona(nombre, email);
             Credenciales credenciales = new Credenciales(usuario, password, nuevaPersona);
             nuevaPersona.setCredenciales(credenciales);
 
+            // Validar y guardar la persona
             if (!servPersona.validarPersona(nuevaPersona)) {
                 System.out.println("Los datos de la persona no son válidos.");
                 return;

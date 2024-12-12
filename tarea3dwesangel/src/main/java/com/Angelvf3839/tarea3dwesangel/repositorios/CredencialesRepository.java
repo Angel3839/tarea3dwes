@@ -8,11 +8,11 @@ import org.springframework.stereotype.Repository;
 import com.Angelvf3839.tarea3dwesangel.modelo.Credenciales;
 
 @Repository
-public interface CredencialesRepository extends JpaRepository <Credenciales, Long>{
+public interface CredencialesRepository extends JpaRepository<Credenciales, Long> {
 
-	boolean existsByUsuario(String usuario);
-	
-	@Query("SELECT CASE WHEN COUNT(c) > 0 THEN true ELSE false END FROM Credenciales c WHERE c.usuario = :usuario AND c.password = :password")
-    boolean existsByUsuarioAndPassword(@Param("usuario") String usuario, @Param("password") String password);
+    boolean existsByUsuario(String usuario);
 
+    @Query("SELECT COUNT(c) > 0 FROM Credenciales c WHERE c.usuario = :usuario AND c.password = :password")
+    boolean verificarCredenciales(@Param("usuario") String usuario, @Param("password") String password);
+    
 }
