@@ -364,7 +364,7 @@ public class FachadaAdmin {
             }
 
             System.out.print("Introduce el número de la planta a eliminar o su código: ");
-            String entrada = in.nextLine().trim();
+            String entrada = in.nextLine().trim(); 
 
             Planta plantaSeleccionada = null;
 
@@ -393,6 +393,11 @@ public class FachadaAdmin {
             System.out.println("Error al eliminar la planta: " + e.getMessage());
         }
     }
+
+
+
+
+
 
     public void nuevoEjemplar() {
         try {
