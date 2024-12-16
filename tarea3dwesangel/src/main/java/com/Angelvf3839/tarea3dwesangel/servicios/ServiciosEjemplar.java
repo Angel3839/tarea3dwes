@@ -42,7 +42,7 @@ public class ServiciosEjemplar {
     }
 
     public ArrayList<Ejemplar> ejemplaresPorTipoPlanta(String codigo) {
-        List<Ejemplar> ejemplares = ejemplarRepo.listarEjemplaresPorPlanta(codigo);
+        List<Ejemplar> ejemplares = ejemplarRepo.encontrarEjemplaresPorCodigoPlanta(codigo);
         return new ArrayList<>(ejemplares);
     }
 

@@ -61,33 +61,21 @@ public class ServiciosPlanta {
     /* Método para validar una planta */
     
     public boolean validarPlanta(Planta p) {
-        if (p.getCodigo() == null || p.getCodigo().isEmpty()) {
-            return false;
-        }
-        if (p.getCodigo().length() < 3 || p.getCodigo().length() > 50) {
-            return false;
-        }
-        if (p.getNombreCientifico() == null || p.getNombreComun() == null) {
-            return false;
-        }
-        if (p.getNombreCientifico().isEmpty() || p.getNombreComun().isEmpty()) {
+        if (p.getCodigo() == null || p.getCodigo().trim().isEmpty()) {
             return false;
         }
         if (!p.getCodigo().matches("^[A-Za-z0-9]+$")) {
             return false;
         }
-        if (p.getNombreCientifico().length() < 3 || p.getNombreCientifico().length() > 100) {
+        if (p.getNombreComun() == null || p.getNombreComun().trim().isEmpty()) {
             return false;
         }
-        if (p.getNombreComun().length() < 3 || p.getNombreComun().length() > 100) {
-            return false;
-        }
-        if (!p.getNombreCientifico().matches("^[a-zA-ZáéíóúÁÉÍÓÚñÑ\\s]+$")
-                || !p.getNombreComun().matches("^[a-zA-ZáéíóúÁÉÍÓÚñÑ\\s]+$")) {
+        if (p.getNombreCientifico() == null || p.getNombreCientifico().trim().isEmpty()) {
             return false;
         }
         return true;
     }
+
 
     /* Método para validar el código de una planta */
     public boolean validarCodigo(String codigo) {
@@ -107,4 +95,21 @@ public class ServiciosPlanta {
         Optional<Planta> plantaOptional = plantaRepo.findByCodigo(codigo);
         return plantaOptional.orElse(null);
     }
+    
+    public boolean eliminarPlanta(Long id) {
+        try {
+            Optional<Planta> plantaOptional = plantaRepo.findById(id);
+            if (plantaOptional.isPresent()) {
+                plantaRepo.deleteById(id);
+                return true; 
+            } else {
+                System.out.println("No se encontró una planta con el ID: " + id);
+                return false; 
+            }
+        } catch (Exception e) {
+            System.out.println("Error al eliminar la planta: " + e.getMessage());
+            return false; 
+        }
+    }
+
 }

@@ -5,6 +5,7 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.InputMismatchException;
+import java.util.List;
 import java.util.Scanner;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,6 +15,7 @@ import org.springframework.stereotype.Component;
 import com.Angelvf3839.tarea3dwesangel.modelo.Ejemplar;
 import com.Angelvf3839.tarea3dwesangel.modelo.Mensaje;
 import com.Angelvf3839.tarea3dwesangel.modelo.Persona;
+import com.Angelvf3839.tarea3dwesangel.modelo.Planta;
 import com.Angelvf3839.tarea3dwesangel.servicios.Controlador;
 import com.Angelvf3839.tarea3dwesangel.servicios.ServiciosEjemplar;
 import com.Angelvf3839.tarea3dwesangel.servicios.ServiciosMensaje;
@@ -108,7 +110,7 @@ public class FachadaPersonal {
                         fachadaAdmin.nuevoEjemplar();
                         break;
                     case 2:
-                        filtrarEjemplaresPorCodigoPlanta();
+                    	filtrarEjemplaresPorTiposDePlantas();
                         break;
                     case 3:
                         fachadaAdmin.verMensajesEjemplar();
@@ -188,7 +190,7 @@ public class FachadaPersonal {
         try {
             System.out.print("Introduce el ID del ejemplar al que quieres agregar un mensaje: ");
             long idEjemplar = in.nextLong();
-            in.nextLine();
+            in.nextLine(); 
 
             Ejemplar ejemplar = serviciosEjemplar.buscarPorID(idEjemplar);
             if (ejemplar == null) {
@@ -198,12 +200,15 @@ public class FachadaPersonal {
 
             System.out.print("Escribe el mensaje: ");
             String textoMensaje = in.nextLine().trim();
+
             if (!serviciosMensaje.validarMensaje(textoMensaje)) {
                 System.out.println("El mensaje no es válido (demasiado largo o vacío).");
                 return;
             }
 
-            Persona persona = serviciosPersona.buscarPorNombre(controlador.getUsuarioAutenticado());
+            String nombreUsuario = controlador.getUsuarioAutenticado().getUsuarioAutenticado();
+
+            Persona persona = serviciosPersona.buscarPorNombre(nombreUsuario);
             if (persona == null) {
                 System.out.println("No se encontró la persona autenticada.");
                 return;
@@ -217,73 +222,132 @@ public class FachadaPersonal {
         }
     }
 
-    public void filtrarEjemplaresPorCodigoPlanta() {
+    public void filtrarEjemplaresPorTiposDePlantas() {
         try {
-            System.out.print("Introduce el código de la planta: ");
-            String codigoPlanta = in.nextLine().trim().toUpperCase();
-
-            if (!serviciosPlanta.codigoExistente(codigoPlanta)) {
-                System.out.println("No existe una planta con ese código.");
+            List<Planta> plantas = serviciosPlanta.verTodas();
+            if (plantas.isEmpty()) {
+                System.out.println("No hay plantas registradas en el sistema.");
                 return;
             }
 
-            ArrayList<Ejemplar> ejemplares = serviciosEjemplar.ejemplaresPorTipoPlanta(codigoPlanta);
-            if (ejemplares.isEmpty()) {
-                System.out.println("No hay ejemplares asociados a la planta con código: " + codigoPlanta);
+            System.out.println("Lista de plantas disponibles:");
+            for (int i = 0; i < plantas.size(); i++) {
+                System.out.println((i + 1) + ". Código: " + plantas.get(i).getCodigo()
+                                   + " | Nombre común: " + plantas.get(i).getNombreComun());
+            }
+
+            System.out.print("Introduce los números de las plantas seleccionadas (separados por comas): ");
+            String seleccion = in.nextLine().trim();
+
+            String[] indices = seleccion.split(",");
+            List<String> codigosSeleccionados = new ArrayList<>();
+            for (String indice : indices) {
+                int i = Integer.parseInt(indice.trim()) - 1;
+                if (i >= 0 && i < plantas.size()) {
+                    codigosSeleccionados.add(plantas.get(i).getCodigo());
+                }
+            }
+
+            if (codigosSeleccionados.isEmpty()) {
+                System.out.println("No seleccionaste ningún tipo de planta válido.");
                 return;
             }
 
-            System.out.println("Ejemplares de la planta con código " + codigoPlanta + ":");
-            for (Ejemplar ejemplar : ejemplares) {
-                System.out.println(ejemplar);
+            System.out.printf("%-20s %-20s %-20s\n", "Nombre del Ejemplar", "Nº Mensajes", "Fecha/Hora Último Mensaje");
+            System.out.println("----------------------------------------------------------------------");
+
+            for (String codigo : codigosSeleccionados) {
+                List<Ejemplar> ejemplares = serviciosEjemplar.ejemplaresPorTipoPlanta(codigo);
+
+                for (Ejemplar ejemplar : ejemplares) {
+                    int numeroMensajes = ejemplar.getMensajes().size();
+
+                    LocalDateTime fechaUltimoMensaje = ejemplar.getMensajes().stream()
+                            .map(Mensaje::getFechaHora)
+                            .max(LocalDateTime::compareTo)
+                            .orElse(null);
+
+                    String fechaHoraStr = (fechaUltimoMensaje != null) ? fechaUltimoMensaje.toString() : "Sin mensajes";
+
+                    System.out.printf("%-20s %-20d %-20s\n", ejemplar.getNombre(), numeroMensajes, fechaHoraStr);
+                }
             }
+        } catch (NumberFormatException e) {
+            System.out.println("Error: Entrada inválida. Debes introducir números separados por comas.");
         } catch (Exception e) {
-            System.out.println("Error al filtrar los ejemplares: " + e.getMessage());
+            System.out.println("Error al filtrar ejemplares: " + e.getMessage());
         }
     }
 
-
     public void verMensajesPorPersona() {
         try {
-            System.out.print("Introduce el ID de la persona: ");
-            long idPersona = in.nextLong();
-
-            ArrayList<Mensaje> mensajes = serviciosMensaje.verMensajesPorPersona(idPersona);
-            if (mensajes.isEmpty()) {
-                System.out.println("No hay mensajes asociados a la persona con ID: " + idPersona);
+            List<Persona> personas = new ArrayList<>(serviciosPersona.verTodos());
+            
+            if (personas.isEmpty()) {
+                System.out.println("No hay personas registradas en el sistema.");
                 return;
             }
 
-            System.out.println("Mensajes de la persona con ID " + idPersona + ":");
-            for (Mensaje mensaje : mensajes) {
-                System.out.println(mensaje);
+            System.out.println("Lista de personas disponibles:");
+            for (Persona persona : personas) {
+                System.out.println("ID: " + persona.getId() + " | Nombre: " + persona.getNombre());
             }
+
+            System.out.print("Introduce el ID de la persona: ");
+            long idPersona = in.nextLong();
+            in.nextLine(); 
+
+            List<Mensaje> mensajes = serviciosMensaje.verMensajesPorPersona(idPersona);
+            if (mensajes.isEmpty()) {
+                System.out.println("No hay mensajes asociados a la persona con ID: " + idPersona);
+            } else {
+                System.out.println("Mensajes de la persona con ID " + idPersona + ":");
+                for (Mensaje mensaje : mensajes) {
+                    System.out.println(mensaje);
+                }
+            }
+        } catch (InputMismatchException e) {
+            System.out.println("Error: Debes introducir un número válido.");
+            in.nextLine();
         } catch (Exception e) {
             System.out.println("Error al buscar mensajes por persona: " + e.getMessage());
         }
     }
 
-
     public void verMensajePorTipoPlanta() {
         try {
-            System.out.print("Introduce el código de la planta: ");
-            String codigoPlanta = in.nextLine().trim().toUpperCase();
-
-            ArrayList<Mensaje> mensajes = serviciosMensaje.verMensajesPorCodigoPlanta(codigoPlanta);
-            if (mensajes.isEmpty()) {
-                System.out.println("No hay mensajes asociados a la planta con código: " + codigoPlanta);
+            List<Planta> plantas = serviciosPlanta.verTodas();
+            if (plantas.isEmpty()) {
+                System.out.println("No hay plantas registradas en el sistema.");
                 return;
             }
 
-            System.out.println("Mensajes de la planta con código " + codigoPlanta + ":");
-            for (Mensaje mensaje : mensajes) {
-                System.out.println(mensaje);
+            System.out.println("Lista de plantas disponibles:");
+            for (Planta planta : plantas) {
+                System.out.println("Código: " + planta.getCodigo() + " | Nombre común: " + planta.getNombreComun());
+            }
+
+            System.out.print("Introduce el código de la planta: ");
+            String codigoPlanta = in.nextLine().trim().toUpperCase();
+
+            if (!serviciosPlanta.codigoExistente(codigoPlanta)) {
+                System.out.println("No existe una planta con el código proporcionado.");
+                return;
+            }
+
+            List<Mensaje> mensajes = serviciosMensaje.verMensajesPorCodigoPlanta(codigoPlanta);
+            if (mensajes.isEmpty()) {
+                System.out.println("No hay mensajes asociados a la planta con código: " + codigoPlanta);
+            } else {
+                System.out.println("Mensajes asociados a la planta con código " + codigoPlanta + ":");
+                for (Mensaje mensaje : mensajes) {
+                    System.out.println(mensaje);
+                }
             }
         } catch (Exception e) {
-            System.out.println("Error al buscar mensajes por tipo de planta: " + e.getMessage());
+            System.out.println("Error al buscar mensajes por planta: " + e.getMessage());
         }
     }
-
 
     public void verMensajePorFechas() {
         try {

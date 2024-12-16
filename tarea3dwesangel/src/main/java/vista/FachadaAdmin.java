@@ -2,7 +2,10 @@ package vista;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Comparator;
 import java.util.InputMismatchException;
+import java.util.List;
 import java.util.Scanner;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -59,6 +62,7 @@ public class FachadaAdmin {
             System.out.println("------MENÚ DE ADMINISTRADOR------");
             System.out.println(" ");
             System.out.println("Selecciona una opción:");
+            System.out.println(" ");
             System.out.println("1. GESTIÓN DE PLANTAS");
             System.out.println("2. GESTIÓN DE EJEMPLARES");
             System.out.println("3. GESTIÓN DE MENSAJES");
@@ -104,7 +108,8 @@ public class FachadaAdmin {
             System.out.println("1. Ver plantas");
             System.out.println("2. Crear nueva planta");
             System.out.println("3. Modificar datos de una planta");
-            System.out.println("4. Volver al menú principal");
+            System.out.println("4. Eliminar una planta");
+            System.out.println("5. Volver al menú principal");
             System.out.println(" ");
             try {
                 opcion = in.nextInt();
@@ -122,13 +127,16 @@ public class FachadaAdmin {
                     case 3:
                         menuAdminModificarPlantas();
                         break;
+                    case 4:
+                        eliminarPlanta();
+                        break;
                 }
             } catch (InputMismatchException e) {
                 System.out.println("Debes ingresar un númer.");
                 in.nextLine();
                 opcion = 0;
             }
-        } while (opcion != 4);
+        } while (opcion != 5);
     }
 
     public void menuAdminModificarPlantas() {
@@ -184,7 +192,7 @@ public class FachadaAdmin {
                         nuevoEjemplar();
                         break;
                     case 2:
-                        fachadaPersonal.filtrarEjemplaresPorCodigoPlanta();
+                        fachadaPersonal.filtrarEjemplaresPorTiposDePlantas();
                         break;
                     case 3:
                         verMensajesEjemplar();
@@ -340,79 +348,163 @@ public class FachadaAdmin {
             System.out.println("Error al crear la planta: " + e.getMessage());
         }
     }
-
-    public void nuevoEjemplar() {
+    
+    public void eliminarPlanta() {
         try {
-            System.out.print("Introduce el código de la planta asociada al ejemplar: ");
-            String codigoPlanta = in.nextLine().trim().toUpperCase();
-
-            if (!servPlanta.codigoExistente(codigoPlanta)) {
-                System.out.println("No existe una planta con ese código.");
+            List<Planta> plantas = servPlanta.verTodas();
+            if (plantas.isEmpty()) {
+                System.out.println("No hay plantas registradas en el sistema.");
                 return;
             }
 
-            Planta planta = servPlanta.buscarPorCodigo(codigoPlanta);
-            Ejemplar nuevoEjemplar = new Ejemplar();
-            nuevoEjemplar.setPlanta(planta);
+            System.out.println("Lista de plantas disponibles:");
+            for (int i = 0; i < plantas.size(); i++) {
+                System.out.println((i + 1) + ". Código: " + plantas.get(i).getCodigo()
+                                   + " | Nombre común: " + plantas.get(i).getNombreComun());
+            }
 
-            servEjemplar.insertar(nuevoEjemplar);
+            System.out.print("Introduce el número de la planta a eliminar o su código: ");
+            String entrada = in.nextLine().trim();
 
-            String nombreFinal = planta.getCodigo() + "_" + nuevoEjemplar.getId();
-            servEjemplar.cambiarNombre(nuevoEjemplar.getId(), nombreFinal);
+            Planta plantaSeleccionada = null;
 
-            System.out.println("Ejemplar creado con éxito. ID: " + nuevoEjemplar.getId());
+            if (entrada.matches("\\d+")) { 
+                int indice = Integer.parseInt(entrada) - 1; 
+                if (indice >= 0 && indice < plantas.size()) {
+                    plantaSeleccionada = plantas.get(indice);
+                } else {
+                    System.out.println("El número introducido no corresponde a ninguna planta.");
+                    return;
+                }
+            } else { 
+                plantaSeleccionada = plantas.stream()
+                                            .filter(p -> p.getCodigo().trim().equalsIgnoreCase(entrada))
+                                            .findFirst()
+                                            .orElse(null);
+                if (plantaSeleccionada == null) {
+                    System.out.println("No existe ninguna planta con ese código.");
+                    return;
+                }
+            }
+
+            servPlanta.eliminarPlanta(plantaSeleccionada.getId());
+            System.out.println("Planta eliminada con éxito: " + plantaSeleccionada.getNombreComun());
         } catch (Exception e) {
-            System.out.println("Error al crear el ejemplar: " + e.getMessage());
+            System.out.println("Error al eliminar la planta: " + e.getMessage());
         }
     }
 
-    public void nuevaPersona() {
-    	try {
+    public void nuevoEjemplar() {
+        try {
+            List<Planta> plantas = servPlanta.verTodas();
+            if (plantas.isEmpty()) {
+                System.out.println("No hay plantas registradas en el sistema.");
+                return;
+            }
+
+            System.out.println("Lista de plantas disponibles:");
+            System.out.println();
+            for (int i = 0; i < plantas.size(); i++) {
+                System.out.println((i + 1) + ". Código: " + plantas.get(i).getCodigo()
+                                   + " | Nombre común: " + plantas.get(i).getNombreComun());
+            }
+
+            System.out.println();
+            System.out.print("Selecciona el número de la planta para registrar el ejemplar: ");
+            int seleccion = in.nextInt();
             in.nextLine();
 
-            
-            System.out.print("Introduce el nombre: ");
-            String nombre = in.nextLine().trim();
+            if (seleccion < 1 || seleccion > plantas.size()) {
+                System.out.println("Selección no válida.");
+                System.out.println();
+                return;
+            }
 
-           
+            Planta plantaSeleccionada = plantas.get(seleccion - 1);
+
+            Ejemplar nuevoEjemplar = new Ejemplar();
+            nuevoEjemplar.setPlanta(plantaSeleccionada);
+
+            String nombreEjemplar = plantaSeleccionada.getCodigo() + "_EJ" + System.currentTimeMillis();
+            nuevoEjemplar.setNombre(nombreEjemplar);
+
+            if (!servEjemplar.validarEjemplar(nuevoEjemplar)) {
+                System.out.println("El ejemplar no es válido. Verifica los datos e intenta nuevamente.");
+                System.out.println();
+                return;
+            }
+
+            servEjemplar.insertar(nuevoEjemplar);
+            System.out.println("Ejemplar registrado con éxito. Nombre: " + nombreEjemplar);
+            System.out.println();
+
+        } catch (Exception e) {
+            System.out.println("Error al registrar el nuevo ejemplar: " + e.getMessage());
+            System.out.println();
+        }
+    }
+
+
+    public void nuevaPersona() {
+        try {
+            in.nextLine(); 
+
+            System.out.print("Introduce el nombre de la persona: ");
+            String nombre = in.nextLine().trim();
+            if (nombre.isEmpty()) {
+                System.out.println("El nombre no puede estar vacío.");
+                return;
+            }
+
             System.out.print("Introduce el email: ");
             String email = in.nextLine().trim();
+            if (!email.matches("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$")) {
+                System.out.println("El email no tiene un formato válido.");
+                return;
+            }
             if (servPersona.emailExistente(email)) {
-                System.out.println("El email ya está registrado.");
+                System.out.println("El email ya está registrado en el sistema.");
                 return;
             }
 
-          
-            System.out.print("Introduce el nombre de usuario: ");
+            System.out.print("Introduce el nombre de usuario de la persona: ");
             String usuario = in.nextLine().trim();
+            if (usuario.contains(" ")) {
+                System.out.println("El nombre de usuario no puede contener espacios.");
+                return;
+            }
             if (servCredenciales.usuarioExistente(usuario)) {
-                System.out.println("El usuario ya está registrado.");
+                System.out.println("El nombre de usuario ya está registrado en el sistema.");
                 return;
             }
 
-            
             System.out.print("Introduce la contraseña: ");
             String password = in.nextLine().trim();
             if (!servCredenciales.validarContraseña(password)) {
-                System.out.println("La contraseña no cumple con los requisitos de seguridad.");
+                System.out.println("La contraseña no cumple con los requisitos mínimos.");
                 return;
             }
 
-           
-            Persona nuevaPersona = new Persona(nombre, email);
-            Credenciales credenciales = new Credenciales(usuario, password, nuevaPersona);
+            Persona nuevaPersona = new Persona();
+            nuevaPersona.setNombre(nombre);
+            nuevaPersona.setEmail(email);
+
+            Credenciales credenciales = new Credenciales();
+            credenciales.setUsuario(usuario);
+            credenciales.setPassword(password);
+            credenciales.setPersona(nuevaPersona);
+
             nuevaPersona.setCredenciales(credenciales);
 
-            
             if (!servPersona.validarPersona(nuevaPersona)) {
                 System.out.println("Los datos de la persona no son válidos.");
                 return;
             }
 
             servPersona.insertar(nuevaPersona);
-            System.out.println("Persona creada con éxito.");
+            System.out.println("Persona registrada con éxito.");
         } catch (Exception e) {
-            System.out.println("Error al crear la persona: " + e.getMessage());
+            System.out.println("Error al registrar la persona: " + e.getMessage());
         }
     }
 
@@ -424,8 +516,10 @@ public class FachadaAdmin {
         }
 
         System.out.println("Lista de todas las personas:");
+        System.out.println();
         for (Persona persona : personas) {
             System.out.println(persona);
+            System.out.println();
         }
     }
 
@@ -438,34 +532,60 @@ public class FachadaAdmin {
         }
 
         System.out.println("Lista de todos los mensajes:");
+        System.out.println();
         for (Mensaje mensaje : mensajes) {
             System.out.println(mensaje);
+            System.out.println();
         }
     }
 
 
-	public void modificarNombreComun() {
-	    try {
-	        System.out.print("Introduce el código de la planta: ");
-	        String codigo = in.nextLine().trim().toUpperCase();
+    public void modificarNombreComun() {
+        try {
+            List<Planta> plantas = servPlanta.verTodas();
+            if (plantas.isEmpty()) {
+                System.out.println("No hay plantas registradas en el sistema.");
+                return;
+            }
 
-	        if (!servPlanta.codigoExistente(codigo)) {
-	            System.out.println("No existe una planta con ese código.");
-	            return;
-	        }
+            System.out.println("Lista de plantas disponibles:");
+            for (int i = 0; i < plantas.size(); i++) {
+                System.out.println((i + 1) + ". Código: " + plantas.get(i).getCodigo().trim()
+                                   + " | Nombre común: " + plantas.get(i).getNombreComun());
+            }
 
-	        System.out.print("Introduce el nuevo nombre común: ");
-	        String nuevoNombreComun = in.nextLine().trim();
+            System.out.print("Introduce el código de la planta: ");
+            String codigo = in.nextLine().trim();
 
-	        if (servPlanta.actualizarNombreComun(codigo, nuevoNombreComun)) {
-	            System.out.println("Nombre común actualizado con éxito.");
-	        } else {
-	            System.out.println("Error al actualizar el nombre común.");
-	        }
-	    } catch (Exception e) {
-	        System.out.println("Error al modificar el nombre común: " + e.getMessage());
-	    }
-	}
+            Planta plantaSeleccionada = plantas.stream()
+                                               .filter(p -> p.getCodigo().trim().equalsIgnoreCase(codigo))
+                                               .findFirst()
+                                               .orElse(null);
+
+            if (plantaSeleccionada == null) {
+                System.out.println("No existe una planta con ese código.");
+                return;
+            }
+
+            System.out.print("Introduce el nuevo nombre común: ");
+            String nuevoNombreComun = in.nextLine().trim();
+
+            if (nuevoNombreComun.isEmpty()) {
+                System.out.println("El nombre común no puede estar vacío.");
+                return;
+            }
+
+            boolean actualizado = servPlanta.actualizarNombreComun(plantaSeleccionada.getCodigo().trim(), nuevoNombreComun);
+
+            if (actualizado) {
+                System.out.println("Nombre común actualizado con éxito a: " + nuevoNombreComun);
+            } else {
+                System.out.println("Error: No se pudo actualizar el nombre común.");
+            }
+        } catch (Exception e) {
+            System.out.println("Error al modificar el nombre común: " + e.getMessage());
+        }
+    }
 
 	public void modificarNombreCientifico() {
 	    try {
@@ -491,29 +611,52 @@ public class FachadaAdmin {
 	}
 
 	public void verMensajesEjemplar() {
-		System.out.print("Introduce el id de un ejemplar para ver sus mensajes: ");
-		try {
-			long idEjemplar = in.nextLong();
-			if (idEjemplar < 1 || idEjemplar > servEjemplar.contarEjemplares()) {
-				System.out.println("Debes introducir un número entre el 1 y " + servEjemplar.contarEjemplares());
-				return;
-			}
-			ArrayList<Mensaje> mensajes = servMensaje.verMensajesPorEjemplar(idEjemplar);
-			if (mensajes.isEmpty()) {
-				System.out.println("No se encontraron mensajes para el ejemplar");
-			} else {
-				System.out.println("Mensajes del ejemplar con ID: " + idEjemplar + ":");
-				System.out.println();
-				for (Mensaje m : mensajes) {
-					System.out.println(m);
-					System.out.println();
-				}
-			}
-		} catch (Exception e) {
-			System.out.println("Error al intentar obtener los mensajes del ejemplar: " + e.getMessage());
-		}
+	    try {
+	        Collection<Ejemplar> ejemplares = servEjemplar.verTodos();
+	        if (ejemplares.isEmpty()) {
+	            System.out.println("No hay ejemplares registrados en el sistema.");
+	            return;
+	        }
+
+	        System.out.println("Lista de ejemplares disponibles:");
+	        for (Ejemplar ejemplar : ejemplares) {
+	            System.out.println("ID: " + ejemplar.getId() + " | Nombre: " + ejemplar.getNombre());
+	        }
+
+	        System.out.print("Introduce el ID del ejemplar para ver sus mensajes: ");
+	        long idEjemplar = in.nextLong();
+	        in.nextLine(); 
+
+	        Ejemplar ejemplarSeleccionado = servEjemplar.buscarPorID(idEjemplar);
+	        if (ejemplarSeleccionado == null) {
+	            System.out.println("No existe un ejemplar con el ID proporcionado.");
+	            return;
+	        }
+
+	        List<Mensaje> mensajes = servMensaje.verMensajesPorEjemplar(idEjemplar);
+	        if (mensajes.isEmpty()) {
+	            System.out.println("No hay mensajes asociados al ejemplar seleccionado.");
+	        } else {
+	            System.out.println("Mensajes del ejemplar: " + ejemplarSeleccionado.getNombre());
+	            System.out.println("-----------------------------------------------------");
+
+	            mensajes.stream()
+	                    .sorted(Comparator.comparing(Mensaje::getFechaHora))
+	                    .forEach(mensaje -> {
+	                        System.out.println("Fecha/Hora: " + mensaje.getFechaHora());
+	                        System.out.println("Persona: " + mensaje.getPersona().getNombre());
+	                        System.out.println("Mensaje: " + mensaje.getMensaje());
+	                        System.out.println("-----------------------------------------------------");
+	                    });
+	        }
+	    } catch (InputMismatchException e) {
+	        System.out.println("Error: Debes introducir un número válido para el ID del ejemplar.");
+	        in.nextLine(); 
+	    } catch (Exception e) {
+	        System.out.println("Error al ver los mensajes del ejemplar: " + e.getMessage());
+	    }
 	}
-	
+
 	public void borrarPersona() {
 	    try {
 	        System.out.print("Introduce el ID de la persona a borrar: ");

@@ -8,9 +8,12 @@ import java.util.ArrayList;
 import java.util.InputMismatchException;
 import java.util.Scanner;
 
+import com.Angelvf3839.tarea3dwesangel.modelo.Perfil;
 import com.Angelvf3839.tarea3dwesangel.modelo.Planta;
+import com.Angelvf3839.tarea3dwesangel.modelo.Sesion;
 import com.Angelvf3839.tarea3dwesangel.servicios.Controlador;
 import com.Angelvf3839.tarea3dwesangel.servicios.ServiciosCredenciales;
+import com.Angelvf3839.tarea3dwesangel.servicios.ServiciosPersona;
 import com.Angelvf3839.tarea3dwesangel.servicios.ServiciosPlanta;
 
 @Component
@@ -21,6 +24,9 @@ public class FachadaInvitado {
 
     @Autowired
     private ServiciosPlanta servPlanta;
+    
+    @Autowired
+    private ServiciosPersona servPersona;
 
     @Autowired
     @Lazy
@@ -39,7 +45,8 @@ public class FachadaInvitado {
     public void menuInvitado() {
         int opcion = 0;
         do {
-            System.out.println("------GESTIÓN DE LA FACHADA------");
+        	System.out.println();
+        	System.out.println("------GESTIÓN DE LA FACHADA------");
             System.out.println();
             System.out.println("Seleccione una opción: ");
             System.out.println(" ");
@@ -71,36 +78,47 @@ public class FachadaInvitado {
 
     public void login() {
         in.nextLine();  
-        System.out.print("Introducir nombre de usuario: ");
-        String usuario = in.nextLine();
-        System.out.print("Introducir contraseña: ");
-        String contraseña = in.nextLine();
+        System.out.print("Introduce el nombre de usuario: ");
+        String usuario = in.nextLine().trim();
+        System.out.print("Introduce la contraseña: ");
+        String contraseña = in.nextLine().trim();
 
         try {
-            boolean autenticar = servCred.autenticar(usuario, contraseña);
-            if (autenticar) {
-                System.out.println("Has iniciado sesión como " + usuario);
-                
-                
-                
-                
-                
-                controlador.setUsuarioAutenticado(usuario);
+            boolean autenticado = servCred.autenticar(usuario, contraseña);
+            if (autenticado) {
+                long idUsuario = servPersona.idUsuarioAutenticado(usuario);
+                if (idUsuario == -1) {
+                    System.out.println("Error al obtener los datos del usuario.");
+                    return;
+                }
 
-                if ("admin".equals(usuario) && "admin".equals(contraseña)) {
-                    System.out.println("Eres el usuario administrador");
-                    fachadaAdmin.menuAdmin();
+                Perfil perfil;
+                if ("admin".equalsIgnoreCase(usuario)) {
+                    perfil = Perfil.ADMIN;
                 } else {
-                    System.out.println("Eres un usuario del personal del vivero");
+                    perfil = Perfil.PERSONAL;
+                }
+
+                controlador.setUsuarioAutenticado(new Sesion(idUsuario, usuario, perfil));
+                System.out.println("Sesión iniciada con éxito como: " + usuario);
+
+                if (perfil == Perfil.ADMIN) {
+                    System.out.println("Bienvenido, administrador.");
+                    System.out.println();
+                    fachadaAdmin.menuAdmin();
+                } else if (perfil == Perfil.PERSONAL) {
+                    System.out.println("Bienvenido, personal del vivero.");
+                    System.out.println();
                     fachadaPersonal.menuPersonal();
                 }
             } else {
                 System.out.println("Usuario o contraseña incorrectos.");
             }
         } catch (Exception e) {
-            System.out.println("No se ha podido iniciar sesión: " + e.getMessage());
+            System.out.println("Error al iniciar sesión: " + e.getMessage());
         }
     }
+
 
     public void verTodasPlantas() {
         ArrayList<Planta> plantas = (ArrayList<Planta>) servPlanta.verTodas();
@@ -110,8 +128,10 @@ public class FachadaInvitado {
         }
 
         System.out.println("Todas las plantas:");
+        System.out.println("------------------");
         for (Planta planta : plantas) {
             System.out.println(planta);
+            System.out.println();
         }
     }
 

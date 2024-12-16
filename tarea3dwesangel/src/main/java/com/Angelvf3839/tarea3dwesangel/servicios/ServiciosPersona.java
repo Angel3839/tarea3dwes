@@ -33,6 +33,7 @@ public class ServiciosPersona {
         Long idPersona = personaRepo.obtenerIdDeUsuario(usuario);
         return (idPersona != null) ? idPersona : -1;
     }
+    
     public boolean validarPersona(Persona pers) {
         if (pers == null) {
             return false;
